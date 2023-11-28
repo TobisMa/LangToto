@@ -1,0 +1,8 @@
+*.o
+*.exe
+*.sh
+totoOut*
+.vscode
+.idea
+totoexec
+totoCompiler
