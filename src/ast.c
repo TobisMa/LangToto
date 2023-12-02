@@ -51,25 +51,37 @@ int addExitStmt(struct TokenListNode *token, struct Program *program)
     struct Token *t = lookAhead(token, 1);
     if (t == NULL || t->type != TOKEN_NUMBER)
     {
-        return 1;
+        return -1;
     }
 
     t = lookAhead(token, 2);
-    if (t == NULL || t->type != TOKEN_STATEMENT_END)
+    if (t == NULL) {
+        return -2;
+    }
+    struct MathExpr mathExpr = {.data.number = NULL};
+    int res = 0;
+    if (t->type == TOKEN_STATEMENT_END)
     {
-        return 2;
+        token = token->next;
+        size_t strBytes = strlen(token->token.symbols) + 1;
+        mathExpr.dt = AST_DT_NUMBER;
+        mathExpr.data.number = malloc(sizeof(char) * strBytes);
+        memcpy(mathExpr.data.number, token->token.symbols, strBytes);
+        res = 2;
+    }
+    else {
+        res = readMathExpression(token, &mathExpr, TOKEN_STATEMENT_END);
+        printf("readMathExpr res %i\n", res);
+        printf("ExitStmt: Expression not implemented yet\n");
+        return -3;
     }
 
-    token = token->next;
-
-    size_t strBytes = strlen(token->token.symbols) + 1;
-    struct ExitStmt exit_stmt = {.exit_code = saveMalloc(sizeof(char) * strBytes)};
-    memcpy(exit_stmt.exit_code, token->token.symbols, strBytes);
-
+    struct ExitStmt exit_stmt = {.exit_code = mathExpr};
     struct ProgramStatement stmt = {.stmt_type = AST_STMT_EXIT, .exitStmt = exit_stmt};
     program->statements[program->count] = stmt;
     program->count++;
-    return 0;
+
+    return res;
 }
 
 struct Token *lookAhead(const struct TokenListNode *token, const int offset)
@@ -95,11 +107,7 @@ void freeAstTree(struct Program *root)
         switch (root->statements[i].stmt_type)
         {
         case AST_STMT_EXIT:
-            if (root->statements[i].exitStmt.exit_code != NULL)
-            {
-                free(root->statements[i].exitStmt.exit_code);
-            }
-            break;
+            freeExitStmt(&root->statements[i].exitStmt);
 
         default:
             printf("WARN: Unknown statement type (for now): %i\n", root->statements[i].stmt_type);
@@ -107,4 +115,81 @@ void freeAstTree(struct Program *root)
     }
     printf("\n");
     free(root);
+}
+
+int readMathExpression(const struct TokenListNode *token, struct MathExpr *res, const enum TokenType endToken) {
+    struct MathExpr root = {.data.expr = NULL, .data.number = NULL, .dt=AST_DT_MATH_EXPR}; 
+    struct TokenListNode *current = token;
+
+    int tokenCount = generateTree(current, &root, endToken);
+    if (tokenCount < 0) {
+        printf("Failed to read math expr: '%i'\n", tokenCount);
+    }
+    *res = root;
+    return tokenCount;
+}
+
+
+int generateTree(struct TokenListNode *currentToken, struct MathExpr *tree, enum TokenType end) {
+    if (currentToken->token.type == TOKEN_STATEMENT_END || currentToken->token.type == end) {
+        return 0;
+    }
+    struct Token last = currentToken->token;
+    currentToken = currentToken->next;
+    struct MathExpr expr = {
+        .data.expr = NULL,
+        .data.number = NULL
+    };
+    struct Token t = currentToken->token;
+    switch (t.type)
+    {
+    case TOKEN_NUMBER:
+        if (tree->data.expr == NULL) {
+            tree->data.expr = saveMalloc(sizeof(struct MathOp));
+            tree->data.expr->left.number = saveMalloc(sizeof(char) + (strlen(t.symbols) + 1));
+            memcpy(tree->data.expr->left.number, t.symbols, strlen(t.symbols) + 1);
+            tree->data.expr->t_left = AST_DT_NUMBER;
+        }
+        else {
+            tree->data.expr->right.number = malloc(sizeof(char) + (strlen(t.symbols) + 1));
+            memcpy(tree->data.expr->right.number, t.symbols, strlen(t.symbols) + 1);
+            tree->data.expr->t_right = AST_DT_NUMBER;
+        }
+        break;
+    
+    case TOKEN_PLUS:
+        tree->data.expr->op = AST_MATH_ADD;
+    
+    default:
+        break;
+    }
+
+    return generateTree(currentToken, tree, end);
+}
+
+
+void freeExitStmt(struct ExitStmt *exitStmt) {
+    freeMathExpr(exitStmt->exit_code);
+}
+
+void freeMathExpr(struct MathExpr mathExpr) {
+    switch (mathExpr.dt) {
+        case AST_DT_NUMBER:
+            free(mathExpr.data.number);
+            mathExpr.data.number = NULL;
+            break;
+
+        case AST_DT_MATH_EXPR:
+            freeMathOp(mathExpr.data.expr);
+            free(mathExpr.data.expr);
+            mathExpr.data.expr = NULL;
+            break;
+
+        default:
+            printf("Unknown data type for MathExpr: %i\n", mathExpr.dt);
+    }
+}
+
+void freeMathOp(struct MathOp *mathExpr) {
+    assert("cannot free mathOp");
 }

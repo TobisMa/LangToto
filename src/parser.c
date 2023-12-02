@@ -37,7 +37,8 @@ struct TokenListNode *parse(const char *input, const long inputSize, int *statem
             break;
 
         case CH_OTHER:
-            consumeChar(input, &ctx);
+            consumeSpecialChar(input, inputSize, &ctx, &token);
+            ctx.update = 1;
             break;
 
         case CH_SPACE:
@@ -178,4 +179,38 @@ void consumeDigit(const char *input, const long inputSize, struct parseinfo *ctx
 
     o_token->symbols = syms;
     o_token->type = TOKEN_NUMBER;
+}
+
+void consumeSpecialChar(const char *input, const long inputSize, struct parseinfo *ctx, struct Token *o_token) {
+    enum TokenType type;
+    switch (peekNextChar(input, ctx, 0)) {
+        case '+':
+            type = TOKEN_PLUS;
+            break;
+
+        case '-':
+            type = TOKEN_MINUS;
+            break;
+
+        case '*':
+            type = TOKEN_MUL;
+            break;
+
+        case '=':
+            type = TOKEN_EQUALS;
+            break;
+
+        case ';':
+            type = TOKEN_STATEMENT_END;
+            break;
+        
+        default:
+            printf("Warning unknwon token for char '%c'\n", peekNextChar(input, ctx, 0));
+    }
+
+    o_token->positionStart = ctx->position;
+    o_token->symbols = malloc(sizeof(char) * 2);
+    o_token->symbols[0] = consumeChar(input, ctx);
+    o_token->symbols[1] = '\0';
+    o_token->type = type;
 }

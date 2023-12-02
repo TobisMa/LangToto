@@ -15,5 +15,8 @@ static const char* ASM_HEADER_DEFAULT[] = {
 
 int generateAssembly(const struct Program* programm, const char* fileName);
 int fprintTemplate(FILE* file, const char* templateLines[]);
+void writeExitAsm(FILE* f_out, struct ExitStmt exitStmt);
 
+void freeMathOp(struct MathOp *mathOp);
+void freeMathExpr(struct MathExpr mathExpr);
 #endif

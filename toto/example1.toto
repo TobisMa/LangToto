@@ -1,2 +1,2 @@
-2a + b = 5 to a
-exit 0
+set a to 2a + b = 5
+Exit 0

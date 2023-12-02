@@ -10,7 +10,12 @@ enum TokenType
     TOKEN_IDENTIFIER,       // 3
     TOKEN_NUMBER,           // 4
     TOKEN_STATEMENT_END,    // 5
-    TOKEN_EOF              // 6
+    TOKEN_EOF,              // 6
+    TOKEN_PLUS,             // 7
+    TOKEN_MINUS,            // 8
+    TOKEN_EQUALS,           // 9
+    TOKEN_MUL,              // 10
+
 };
 
 struct Token

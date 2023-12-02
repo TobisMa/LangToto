@@ -16,9 +16,7 @@ int generateAssembly(const struct Program* program, const char* fileName) {
     for (int i = 0; i < program->count; i++) {
         switch (program->statements[i].stmt_type) {
             case AST_STMT_EXIT:
-                fprintf(f_out, "    mov rax, 60\n");
-                fprintf(f_out, "    mov rdi, %s\n", program->statements[i].exitStmt.exit_code);
-                fprintf(f_out, "    syscall\n\n");
+                writeExitAsm(f_out, program->statements[i].exitStmt);
                 break;
             
             default:
@@ -31,6 +29,24 @@ int generateAssembly(const struct Program* program, const char* fileName) {
     printf("Successfully generated Assembly into file '%s'\n", fileName);
     return 0;
 
+}
+
+
+void writeExitAsm(FILE* f_out, struct ExitStmt exitStmt) {
+    switch (exitStmt.exit_code.dt) {
+        case AST_DT_NUMBER:
+            fprintf(f_out, "    mov rax, 60\n");
+            fprintf(f_out, "    mov rdi, %s\n", exitStmt.exit_code.data.number);
+            fprintf(f_out, "    syscall\n\n");
+            break;
+
+        case AST_DT_MATH_EXPR:
+            printf("Not yet implemented: MathExpr\n");
+            break;
+
+        default:
+            printf("Unknown data type for EXIT_STMT\n");
+    }
 }
 
 

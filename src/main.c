@@ -52,7 +52,6 @@ char *readWholeFile(const char *fileName, long *o_size)
     if (!file)
     {
         printf("Failed to open file '%s'\n", fileName);
-        fclose(file);
         return NULL;
     }
     long size = fileSize(file);

@@ -3,7 +3,7 @@
 #include <string.h>
 #include "token.h"
 
-static const char KEYWORD_EXIT_LITERAL[] = "exit";
+static const char KEYWORD_EXIT_LITERAL[] = "Exit";
 static const char KEYWORD_SET_LITERAL[] = "set";
 static const char KEYWORD_TO_LITERAL[] = "to";
 

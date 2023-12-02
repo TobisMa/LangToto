@@ -26,6 +26,7 @@ char peekNextChar(const char *input, const struct parseinfo *ctx, const long off
 
 void consumeIdentifier(const char *input, const long inputSize, struct parseinfo *ctx, struct Token *o_token);
 void consumeDigit(const char *input, const long inputSize, struct parseinfo *ctx, struct Token *o_token);
+void consumeSpecialChar(const char *input, const long inputSize, struct parseinfo *ctx, struct Token *o_token);
 
 void freeTokenList(struct TokenListNode *start);
 
